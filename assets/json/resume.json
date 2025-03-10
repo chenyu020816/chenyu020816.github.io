@@ -12,7 +12,7 @@
       "position": "Research Intern",
       "location": "Taipei, Taiwan",
       "url": "https://gis.rchss.sinica.edu.tw/",
-      "startDate": "2023 July",
+      "startDate": "2023 Jul",
       "endDate": "Present",
       "summary": ""
     }
@@ -105,12 +105,40 @@
   ],
   "projects": [
     {
-      "name": "Quantum Computing",
-      "summary": "Quantum computing is the use of quantum-mechanical phenomena such as superposition and entanglement to perform computation. Computers that perform quantum computations are known as quantum computers.",
-      "highlights": ["Quantum Teleportation", "Quantum Cryptography"],
-      "startDate": "2018-01-01",
-      "endDate": "2018-01-01",
-      "url": "https://example.com"
+      "name": "Online Educational Resources Recommendation Website (TSDC Hackathon 1st place) @ Taiwan",
+      "summary": "Developed a website that generates learning roadmaps using OpenAI API, recommends online resources, and supports user reviews.",
+      "startDate": "2024-Jun",
+      "endDate": "2024-Jun",
+      "url": "https://github.com/chenyu020816/Edu-Resources-Recommend-Website"
+    },
+    {
+      "name": "Pedestrian Movement Visualization System @ Taiwan",
+      "summary": "Develop an interface that can capture images in real-time through external cameras or by uploading videos. On the backend, use MOT (Multiple Object Tracking) to detect and track pedestrian movements, and visualize and count them based on their direction.",
+      "startDate": "2024-Mar",
+      "endDate": "2024-Jun",
+      "url": "https://github.com/chenyu020816/Pedestrian_Tracking_Visualization"
+    },
+    {
+      "name": "Unmanned Stores Using Deep Learning Object Detection Model @ Taiwan",
+      "summary": "A smart checkout system for unmanned stores using image recognition. It integrates facial recognition for user authentication and YOLO-based object detection to identify purchased items efficiently.",
+      "highlights": [
+        "Utilized a YOLO-based object detection model to recognize multiple products simultaneously, enhancing efficiency and eliminating the need for barcode scanning.",
+        "Developed a demonstration interface using Tkinter for seamless user interaction and functionality showcase."
+      ],
+      "startDate": "2023-Sep",
+      "endDate": "2023-Dec",
+      "url": "https://github.com/chenyu020816/UnmannedShop-ObjectDetection"
+    },
+    {
+      "name": "QGIS Plusings (Dynamic Flow, GWR, GTWR, GWQR) @ Taiwan",
+      "summary": "Developed 3D Gradient Approach, GWR, GTWR, and GWQR algorithms as QGIS software Plugins.",
+      "highlights": [
+        "The Gradient Approach Plugin Dynamic Flow in QGIS has over 1k downloads.",
+        "Users do not need to write their own Python or R scripts, allowing them to execute geospatial analysis within QGIS. This also made it easier to share and use these algorithms."
+      ],
+      "startDate": "2023-Jun",
+      "endDate": "2023-Dec",
+      "url": "https://github.com/chenyu020816/QGIS-Plugin-DynamicFlow"
     }
   ]
 }
