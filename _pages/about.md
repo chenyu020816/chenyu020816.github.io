@@ -2,7 +2,7 @@
 layout: about
 title: about
 permalink: /
-subtitle: <a href='https://www.bu.edu/'>Boston University</a>. Boston, MA, USA 
+subtitle: <a href='https://www.bu.edu/'>Boston University</a>. Boston MA, United State 
 
 profile:
   align: right
