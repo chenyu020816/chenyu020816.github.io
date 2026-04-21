@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Chen-Yu (Erioe) Liu — Research Assistant at Academia Sinica. Research in Generative Models, Medical Imaging, and GeoCV.">
+  <title>Chen-Yu Liu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* Sky tones — blue hour fading into Venus Belt */
+      --sky-deep:    #c8dff5;   /* zenith */
+      --sky-mid:     #daeafa;   /* mid sky */
+      --sky-light:   #eaf4fd;   /* pale horizon */
+      --venus-deep:  #c9b4e0;   /* Venus Belt core */
+      --venus-mid:   #ddc9ef;   /* fading Venus Belt */
+      --venus-light: #ede6f7;   /* Venus Belt wash */
+
+      /* Surfaces */
+      --bg:          #e8f2fc;
+      --bg-elevated: #f3f8fe;
+      --bg-card:     #ffffff;
+      --bg-hover:    #f0f7fe;
+      --sidebar-bg:  #ede8f8;   /* Venus Belt side */
+
+      /* Borders */
+      --border:       rgba(170,200,230,.55);
+      --border-mid:   rgba(145,175,215,.7);
+      --border-light: rgba(110,145,195,.5);
+      --border-venus: rgba(180,150,210,.45);
+
+      /* Text — deep arctic navy */
+      --text:        #122032;
+      --text-sec:    #2c4f70;
+      --text-muted:  #5a7d9a;
+      --text-faint:  #8aabca;
+
+      /* Accent — aurora teal/green */
+      --accent:       #009e8a;
+      --accent-light: #00b8a0;
+      --accent-glow:  rgba(0,158,138,.13);
+      --accent-faint: rgba(0,158,138,.07);
+      --accent-border:rgba(0,158,138,.28);
+
+      /* Venus Belt — dusty mauve */
+      --venus:        #8b5fb8;
+      --venus-glow:   rgba(139,95,184,.1);
+      --venus-faint:  rgba(139,95,184,.06);
+      --venus-border: rgba(139,95,184,.3);
+
+      /* Aurora blue (for status badges etc.) */
+      --aurora-blue:   #2a7dc4;
+      --aurora-bfaint: rgba(42,125,196,.08);
+      --aurora-bborder:rgba(42,125,196,.28);
+
+      --fw-display: 'Cormorant Garamond', Georgia, serif;
+      --fw-body:    'DM Sans', system-ui, sans-serif;
+      --fw-mono:    'JetBrains Mono', 'Courier New', monospace;
+      --sidebar:    272px;
+      --ease:       cubic-bezier(.4,0,.2,1);
+      --shadow-sm:  0 1px 4px rgba(18,32,50,.06), 0 1px 2px rgba(18,32,50,.04);
+      --shadow-md:  0 4px 16px rgba(18,32,50,.08), 0 1px 4px rgba(18,32,50,.05);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--fw-body);
+      font-size: 14.5px;
+      line-height: 1.75;
+      min-height: 100vh;
+    }
+
+    /* ── Sky canvas — fixed behind everything ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        /* Aurora wisps — teal at top-right */
+        radial-gradient(ellipse 55% 38% at 85% 8%,  rgba(0,195,172,.14) 0%, transparent 65%),
+        radial-gradient(ellipse 35% 28% at 92% 22%,  rgba(0,215,190,.09) 0%, transparent 55%),
+        /* Aurora ribbon across upper middle */
+        radial-gradient(ellipse 60% 22% at 55% 14%,  rgba(80,200,210,.08) 0%, transparent 60%),
+        /* Venus Belt — mauve on the left/lower */
+        radial-gradient(ellipse 45% 55% at 0% 75%,   rgba(180,130,220,.12) 0%, transparent 60%),
+        radial-gradient(ellipse 55% 40% at 15% 90%,  rgba(160,110,200,.09) 0%, transparent 55%),
+        /* Blue hour — main sky wash */
+        linear-gradient(168deg,
+          #daeafa  0%,
+          #e4f1fb 25%,
+          #eaf4fc 45%,
+          #ede8f7 70%,
+          #e8e2f6 100%
+        );
+      animation: skyShift 22s ease-in-out infinite alternate;
+    }
+
+    @keyframes skyShift {
+      0%   { opacity: 1;   transform: scale(1)    translate(0,    0   ); }
+      30%  { opacity: .94; transform: scale(1.015) translate(.4%,  .3%); }
+      65%  { opacity: .97; transform: scale(.99)   translate(-.3%, .5%); }
+      100% { opacity: 1;   transform: scale(1.01)  translate(.5%, -.2%); }
+    }
+
+    /* ───────────────────────── LAYOUT ───────────────────────── */
+    .layout {
+      display: flex;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ───────────────────────── SIDEBAR ─────────────────────── */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      width: var(--sidebar);
+      height: 100vh;
+      background: linear-gradient(175deg, #ede8f8 0%, #e4eef8 55%, #dde9f5 100%);
+      border-right: 1px solid var(--border-venus);
+      display: flex;
+      flex-direction: column;
+      padding: 44px 30px 36px;
+      z-index: 100;
+      overflow-y: auto;
+      box-shadow: 2px 0 20px rgba(140,100,190,.07), 1px 0 6px rgba(18,32,50,.04);
+    }
+
+    /* faint aurora shimmer on sidebar edge */
+    .sidebar::after {
+      content: '';
+      position: absolute;
+      top: 0; right: -1px;
+      width: 1px; height: 100%;
+      background: linear-gradient(to bottom,
+        transparent 0%,
+        rgba(0,184,160,.5) 30%,
+        rgba(139,95,184,.4) 65%,
+        transparent 100%
+      );
+      pointer-events: none;
+    }
+
+    /* ── Identity ── */
+    .identity { margin-bottom: 28px; animation: up .55s var(--ease) both; }
+
+    .name {
+      font-family: var(--fw-display);
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: -.025em;
+      line-height: 1.05;
+      color: var(--text);
+    }
+
+    .nickname {
+      display: block;
+      font-family: var(--fw-display);
+      font-style: italic;
+      font-size: 13px;
+      color: var(--accent);
+      letter-spacing: .05em;
+      margin: 5px 0 12px;
+    }
+
+    .role {
+      font-size: 11.5px;
+      color: var(--text-sec);
+      line-height: 1.5;
+    }
+
+    .affiliation {
+      font-family: var(--fw-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 14px;
+    }
+
+    .tag {
+      font-family: var(--fw-mono);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--accent);
+      background: var(--accent-faint);
+      border: 1px solid var(--accent-border);
+      padding: 3px 7px;
+    }
+
+    /* ── Divider ── */
+    .hr {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(to right, var(--border-venus), var(--border), transparent);
+      margin: 22px 0;
+    }
+
+    /* ── Navigation ── */
+    nav { animation: up .55s .08s var(--ease) both; }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 9px 0;
+      font-size: 11.5px;
+      font-weight: 500;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-decoration: none;
+      cursor: pointer;
+      transition: color .2s var(--ease);
+      border: none; background: none;
+    }
+
+    .nav-link .tick {
+      width: 0; height: 1px;
+      background: var(--accent);
+      transition: width .3s var(--ease);
+      flex-shrink: 0;
+    }
+
+    .nav-link:hover { color: var(--text-sec); }
+    .nav-link:hover .tick { width: 16px; }
+    .nav-link.active { color: var(--accent); }
+    .nav-link.active .tick { width: 22px; }
+
+    /* ── Social / Downloads ── */
+    .social-area {
+      margin-top: auto;
+      animation: up .55s .16s var(--ease) both;
+    }
+
+    .soc-link {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 5px 0;
+      font-family: var(--fw-mono);
+      font-size: 10.5px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color .2s var(--ease);
+    }
+
+    .soc-link svg { flex-shrink: 0; opacity: .5; transition: opacity .2s; }
+    .soc-link:hover { color: var(--accent); }
+    .soc-link:hover svg { opacity: 1; }
+
+    .dl-row { display: flex; gap: 8px; margin-top: 14px; }
+
+    .dl-btn {
+      flex: 1;
+      display: block;
+      padding: 7px 10px;
+      font-family: var(--fw-mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      text-align: center;
+      text-decoration: none;
+      color: var(--text-sec);
+      border: 1px solid var(--border-mid);
+      background: rgba(255,255,255,.5);
+      transition: all .2s var(--ease);
+    }
+
+    .dl-btn:hover {
+      color: var(--accent);
+      border-color: var(--accent-border);
+      background: var(--accent-faint);
+    }
+
+    /* ───────────────────────── MAIN ────────────────────────── */
+    .main {
+      margin-left: var(--sidebar);
+      flex: 1;
+      position: relative;
+    }
+
+    /* ── Sections ── */
+    .section {
+      display: none;
+      min-height: 100vh;
+      padding: 60px 68px 80px;
+      position: relative;
+    }
+
+    .section.active {
+      display: block;
+      animation: pageIn .38s var(--ease) both;
+    }
+
+    @keyframes pageIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes up {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Section header ── */
+    .s-head { margin-bottom: 48px; }
+
+    .s-num {
+      font-family: var(--fw-mono);
+      font-size: 10.5px;
+      color: var(--accent);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .s-title {
+      font-family: var(--fw-display);
+      font-size: 54px;
+      font-weight: 600;
+      letter-spacing: -.03em;
+      line-height: .95;
+      background: linear-gradient(135deg, var(--text) 0%, #2a5a8a 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Sub-section header ── */
+    .sub-head {
+      font-family: var(--fw-mono);
+      font-size: 10px;
+      color: var(--text-faint);
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    /* ───────────────────────── ABOUT ───────────────────────── */
+
+    /* Profile intro: photo + bio side-by-side */
+    .about-intro {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+
+    .profile-photo-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .profile-photo {
+      width: 200px;
+      height: 240px;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+      border: 1px solid var(--border-mid);
+      box-shadow: var(--shadow-md), 0 0 0 4px rgba(255,255,255,.7), 0 0 0 5px var(--border);
+    }
+
+    /* subtle aurora tint on photo hover */
+    .profile-photo-wrap::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 55%, var(--accent-faint) 100%);
+      pointer-events: none;
+    }
+
+    .bio p {
+      color: var(--text-sec);
+      font-size: 15px;
+      line-height: 1.9;
+      margin-bottom: 18px;
+    }
+
+    .bio p:last-child { margin-bottom: 0; }
+    .hi { color: var(--text); font-weight: 500; }
+
+    /* Alaska photo — Contact section */
+    .alaska-scene {
+      position: relative;
+      width: 100%;
+      margin-bottom: 48px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      line-height: 0;
+    }
+
+    .alaska-scene img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 7s ease;
+    }
+
+    .alaska-scene:hover img { transform: scale(1.015); }
+
+    /* soft vignette to blend with page */
+    .alaska-scene::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to right,  rgba(237,232,248,.3) 0%, transparent 8%, transparent 92%, rgba(232,242,252,.3) 100%),
+        linear-gradient(to bottom, rgba(237,240,250,.45) 0%, transparent 18%, transparent 82%, rgba(235,242,252,.5) 100%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .alaska-caption {
+      position: absolute;
+      bottom: 14px;
+      right: 18px;
+      font-family: var(--fw-mono);
+      font-size: 9.5px;
+      color: rgba(255,255,255,.8);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      z-index: 2;
+      text-shadow: 0 1px 6px rgba(0,0,0,.5);
+    }
+
+    /* Education cards */
+    .edu-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 36px;
+    }
+
+    .edu-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 22px 26px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow .22s var(--ease), border-color .22s var(--ease);
+    }
+
+    .edu-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0;
+      width: 2px; height: 100%;
+      background: linear-gradient(to bottom, var(--accent), var(--venus));
+      transform: scaleY(0);
+      transition: transform .3s var(--ease);
+      transform-origin: bottom;
+    }
+
+    .edu-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-mid); }
+    .edu-card:hover::before { transform: scaleY(1); }
+
+    .edu-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+
+    .edu-school { font-weight: 600; font-size: 14.5px; color: var(--text); }
+
+    .edu-period {
+      font-family: var(--fw-mono);
+      font-size: 10.5px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .edu-degree { font-size: 12.5px; color: var(--text-sec); margin-bottom: 12px; }
+
+    .badges { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .badge {
+      font-family: var(--fw-mono);
+      font-size: 9.5px;
+      padding: 2.5px 8px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      background: var(--bg-elevated);
+    }
+
+    .badge.hi {
+      color: var(--accent);
+      border-color: var(--accent-border);
+      background: var(--accent-faint);
+    }
+
+    /* Skills */
+    .skills-block { margin-top: 48px; }
+
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .skill-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow .2s var(--ease), border-color .2s var(--ease);
+    }
+
+    .skill-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-mid); }
+
+    .sk-label {
+      font-family: var(--fw-mono);
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .sk-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 0;
+      font-size: 12.5px;
+      color: var(--text-sec);
+    }
+
+    .sk-items span::after { content: ' · '; color: var(--border-mid); margin: 0 4px; }
+    .sk-items span:last-child::after { display: none; }
+
+    /* ─────────────────────── PUBLICATIONS ─────────────────── */
+    .pub-list { display: flex; flex-direction: column; gap: 22px; }
+
+    .pub-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 30px 34px;
+      position: relative;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow .22s var(--ease), border-color .22s var(--ease);
+    }
+
+    .pub-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-mid); }
+
+    .pub-idx {
+      font-family: var(--fw-display);
+      font-style: italic;
+      font-size: 52px;
+      color: var(--sky-deep);
+      position: absolute;
+      top: 16px; right: 26px;
+      line-height: 1;
+      user-select: none;
+      transition: color .2s;
+    }
+
+    .pub-card:hover .pub-idx { color: var(--venus-deep); }
+
+    .status {
+      display: inline-block;
+      font-family: var(--fw-mono);
+      font-size: 9.5px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      margin-bottom: 12px;
+    }
+
+    .status.pub {
+      color: var(--accent);
+      background: var(--accent-faint);
+      border: 1px solid var(--accent-border);
+    }
+
+    .status.rev {
+      color: var(--aurora-blue);
+      background: var(--aurora-bfaint);
+      border: 1px solid var(--aurora-bborder);
+    }
+
+    .pub-title {
+      font-family: var(--fw-display);
+      font-size: 19px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+      margin-bottom: 10px;
+      max-width: 86%;
+    }
+
+    .pub-authors {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 7px;
+    }
+
+    .pub-authors strong { color: var(--text-sec); font-weight: 500; }
+
+    .pub-venue {
+      font-family: var(--fw-mono);
+      font-size: 10.5px;
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .pub-body {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.75;
+    }
+
+    /* ────────────────────────── PROJECTS ──────────────────── */
+    .proj-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .proj-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 26px 28px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow .22s var(--ease), border-color .22s var(--ease);
+    }
+
+    .proj-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 0; height: 2px;
+      background: linear-gradient(to right, var(--accent), var(--venus));
+      transition: width .38s var(--ease);
+    }
+
+    .proj-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-mid); }
+    .proj-card:hover::after { width: 100%; }
+    .proj-card.span2 { grid-column: 1 / -1; }
+
+    .proj-type {
+      font-family: var(--fw-mono);
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--text-faint);
+      margin-bottom: 9px;
+    }
+
+    .proj-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+      margin-bottom: 8px;
+    }
+
+    .award-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--fw-mono);
+      font-size: 9.5px;
+      color: var(--venus);
+      background: var(--venus-faint);
+      border: 1px solid var(--venus-border);
+      padding: 3px 9px;
+      margin-bottom: 10px;
+    }
+
+    .proj-desc {
+      font-size: 12.5px;
+      color: var(--text-sec);
+      line-height: 1.75;
+      margin-bottom: 14px;
+    }
+
+    .proj-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .ptag {
+      font-family: var(--fw-mono);
+      font-size: 9.5px;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 2.5px 8px;
+      background: var(--bg-elevated);
+    }
+
+    /* ─────────────────────────── CONTACT ─────────────────── */
+    .contact-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 72px;
+      align-items: start;
+    }
+
+    .contact-intro {
+      font-size: 15px;
+      color: var(--text-sec);
+      line-height: 1.85;
+      margin-bottom: 36px;
+      max-width: 420px;
+    }
+
+    .c-list { display: flex; flex-direction: column; gap: 14px; }
+
+    .c-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      padding: 15px 18px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      transition: all .22s var(--ease);
+    }
+
+    .c-item:hover {
+      border-color: var(--accent-border);
+      box-shadow: var(--shadow-md), 0 0 0 3px var(--accent-faint);
+    }
+
+    .c-icon {
+      width: 38px; height: 38px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all .22s var(--ease);
+    }
+
+    .c-item:hover .c-icon {
+      border-color: var(--accent-border);
+      background: var(--accent-faint);
+    }
+
+    .c-icon svg {
+      width: 16px; height: 16px;
+      color: var(--text-muted);
+      transition: color .22s var(--ease);
+    }
+
+    .c-item:hover .c-icon svg { color: var(--accent); }
+
+    .c-text { display: flex; flex-direction: column; gap: 1px; }
+
+    .c-label {
+      font-family: var(--fw-mono);
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--text-faint);
+    }
+
+    .c-val { font-size: 13.5px; color: var(--text); }
+
+    /* Venus Belt decorative text */
+    .big-hello {
+      font-family: var(--fw-display);
+      font-size: 90px;
+      font-weight: 600;
+      letter-spacing: -.04em;
+      line-height: .9;
+      background: linear-gradient(145deg, var(--sky-deep) 0%, var(--venus-mid) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      user-select: none;
+      align-self: center;
+    }
+
+    /* ─────────────────────── MOBILE NAV ───────────────────── */
+    .hamburger {
+      display: none;
+      position: fixed;
+      top: 14px; right: 14px;
+      z-index: 200;
+      background: var(--bg-card);
+      border: 1px solid var(--border-mid);
+      padding: 10px 11px;
+      cursor: pointer;
+      flex-direction: column;
+      gap: 5px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .hamburger span {
+      display: block;
+      width: 20px; height: 1px;
+      background: var(--text);
+      transition: all .3s var(--ease);
+    }
+
+    .hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+    /* ───────────────────────── RESPONSIVE ──────────────────── */
+    @media (max-width: 980px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform .3s var(--ease);
+        box-shadow: 4px 0 32px rgba(100,80,160,.12);
+      }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .hamburger { display: flex; }
+      .section { padding: 52px 24px 64px; }
+      .s-title { font-size: 40px; }
+      .about-intro { grid-template-columns: 160px 1fr; gap: 28px; }
+      .profile-photo { width: 160px; height: 196px; }
+      .skills-grid { grid-template-columns: 1fr 1fr; }
+      .proj-grid { grid-template-columns: 1fr; }
+      .proj-card.span2 { grid-column: 1; }
+      .contact-wrap { grid-template-columns: 1fr; gap: 32px; }
+      .big-hello { display: none; }
+    }
+
+    @media (max-width: 560px) {
+      .about-intro { grid-template-columns: 1fr; }
+      .profile-photo { width: 130px; height: 158px; }
+      .skills-grid { grid-template-columns: 1fr; }
+      .s-title { font-size: 32px; }
+      .pub-title { max-width: 100%; font-size: 17px; }
+      .pub-idx { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<button class="hamburger" id="ham" aria-label="Toggle menu">
+  <span></span><span></span><span></span>
+</button>
+
+<div class="layout">
+
+  <!-- ──────────────── SIDEBAR ──────────────── -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="identity">
+      <h1 class="name">Chen-Yu Liu</h1>
+      <span class="nickname">Erioe</span>
+      <p class="role">Research Assistant (Full-time)</p>
+      <p class="affiliation">IIS · Academia Sinica</p>
+      <div class="tags">
+        <span class="tag">Generative Models</span>
+        <span class="tag">Medical Imaging</span>
+        <span class="tag">GeoCV</span>
+      </div>
+    </div>
+
+    <div class="hr"></div>
+
+    <nav id="nav">
+      <button class="nav-link active" data-sec="about">
+        <span class="tick"></span>About
+      </button>
+      <button class="nav-link" data-sec="publications">
+        <span class="tick"></span>Publications
+      </button>
+      <button class="nav-link" data-sec="projects">
+        <span class="tick"></span>Projects
+      </button>
+      <button class="nav-link" data-sec="contact">
+        <span class="tick"></span>Contact
+      </button>
+    </nav>
+
+    <div class="social-area">
+      <div class="hr"></div>
+      <a href="mailto:chenyu20020816@gmail.com" class="soc-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <rect x="2" y="4" width="20" height="16" rx="2"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+        chenyu20020816@gmail.com
+      </a>
+      <a href="https://github.com/chenyu020816" class="soc-link" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+        </svg>
+        chenyu020816
+      </a>
+      <div class="dl-row">
+        <a class="dl-btn" href="./CV.pdf" download>CV</a>
+        <a class="dl-btn" href="./Resume.pdf" download>Résumé</a>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ──────────────── MAIN ──────────────── -->
+  <main class="main">
+
+    <!-- ── ABOUT ── -->
+    <section id="about" class="section active">
+      <div class="s-head">
+        <span class="s-num">// 01</span>
+        <h2 class="s-title">About</h2>
+      </div>
+
+      <div class="about-intro">
+        <div class="profile-photo-wrap">
+          <img src="./My%20Pic.JPG" alt="Chen-Yu Liu" class="profile-photo">
+        </div>
+        <div class="bio">
+          <p>
+            I'm currently a <span class="hi">full-time Research Assistant</span> at the Multimedia Technology
+            Lab, Institute of Information Science, Academia Sinica, supervised by
+            <span class="hi">Dr. Chien-Yao Wang</span>. My current research focuses on
+            <span class="hi">3D neuron segmentation</span> for confocal microscopy images — building
+            pipelines to identify and delineate distinct neuronal structures in volumetric data.
+          </p>
+          <p>
+            Prior to this, I served as a <span class="hi">part-time Research Assistant</span> at the Center of
+            Geographic Information Science, RCHSS, Academia Sinica (2023–2026), supervised by
+            Dr. Ta-Chien Chan. My work there spanned spatiotemporal statistical analysis,
+            <span class="hi">GeoCV</span> (applying YOLO and line-detection models to historical maps), and
+            developing QGIS plugins — one of which, <em>Dynamic Flow</em>, has reached ~2,000 downloads.
+          </p>
+          <p>
+            My research interests lie in the cross-domain application of machine learning and computer vision:
+            <span class="hi">generative models for image &amp; video synthesis</span>, medical image segmentation,
+            and geographic computer vision.
+          </p>
+        </div>
+      </div>
+
+      <!-- Education -->
+      <div style="margin-top:52px">
+        <p class="sub-head">Education</p>
+        <div class="edu-stack">
+
+          <div class="edu-card">
+            <div class="edu-row">
+              <div>
+                <p class="edu-school">Boston University</p>
+                <p class="edu-degree">Master of Data Science</p>
+              </div>
+              <span class="edu-period">Aug 2024 – Jan 2026</span>
+            </div>
+            <div class="badges">
+              <span class="badge">Boston, MA</span>
+              <span class="badge">GPA: 3.5 / 4.0</span>
+              <span class="badge hi">Merit Scholarship — $10,000</span>
+              <span class="badge">Deep Learning (A)</span>
+              <span class="badge">Reinforcement Learning (A–)</span>
+              <span class="badge">Deep Learning for Data Science (A)</span>
+            </div>
+          </div>
+
+          <div class="edu-card">
+            <div class="edu-row">
+              <div>
+                <p class="edu-school">Tamkang University</p>
+                <p class="edu-degree">Bachelor of Statistics</p>
+              </div>
+              <span class="edu-period">Aug 2020 – Jun 2024</span>
+            </div>
+            <div class="badges">
+              <span class="badge">New Taipei, Taiwan</span>
+              <span class="badge">GPA: 3.8 / 4.0</span>
+              <span class="badge hi">Wang Shaoxin Scholarship</span>
+              <span class="badge">Machine Learning</span>
+              <span class="badge">Computer Vision</span>
+              <span class="badge">Data Mining</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Skills -->
+      <div class="skills-block">
+        <p class="sub-head">Technical Skills</p>
+        <div class="skills-grid">
+          <div class="skill-card">
+            <p class="sk-label">Programming</p>
+            <div class="sk-items">
+              <span>Python</span><span>R</span><span>C</span><span>C++</span>
+            </div>
+          </div>
+          <div class="skill-card">
+            <p class="sk-label">ML / DL</p>
+            <div class="sk-items">
+              <span>PyTorch</span><span>TensorFlow</span><span>Keras</span>
+              <span>Scikit-Learn</span><span>OpenCV</span>
+            </div>
+          </div>
+          <div class="skill-card">
+            <p class="sk-label">Tools &amp; Infra</p>
+            <div class="sk-items">
+              <span>Git</span><span>Docker</span><span>Linux</span>
+              <span>SQL</span><span>AWS</span><span>QGIS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PUBLICATIONS ── -->
+    <section id="publications" class="section">
+      <div class="s-head">
+        <span class="s-num">// 02</span>
+        <h2 class="s-title">Publications</h2>
+      </div>
+
+      <div class="pub-list">
+
+        <div class="pub-card">
+          <span class="pub-idx">01</span>
+          <span class="status pub">Published · 2025</span>
+          <h3 class="pub-title">
+            Application of Deep Learning for Symbol Detection on Historical Maps to Explore
+            Spatiotemporal Changes in the Regional Tea Industry of Early 20th-Century Taiwan
+          </h3>
+          <p class="pub-authors">
+            Pi-Ling Pai, <strong>Chen-Yu Liu</strong>, Chiao-Ling Kuo, Ta-Chien Chan
+          </p>
+          <p class="pub-venue">Digital Scholarship in the Humanities, 2025</p>
+          <div class="pub-body">
+            Designed and implemented a deep learning pipeline using YOLOv8 to detect landscape symbols
+            (fields, forests, tea gardens) on historical maps from Taiwan's Japanese colonial period,
+            achieving mAP50-95 of 0.78. Addressed data scarcity via synthetic training data generation
+            and built a web-based annotation platform to streamline data collection.
+          </div>
+        </div>
+
+        <div class="pub-card">
+          <span class="pub-idx">02</span>
+          <span class="status rev">Under Review</span>
+          <h3 class="pub-title">
+            Effect of Urban Greenness and Air Pollution on Asthma Visits Among Children
+            and Adolescents in an Industrial and Non-Industrial City
+          </h3>
+          <p class="pub-authors">
+            Hung-Ling Huang, Jia-Hong Tang, <strong>Chen-Yu Liu</strong>, Chau-Chyun Sheu, Ta-Chien Chan
+          </p>
+          <p class="pub-venue">(Under Review)</p>
+          <div class="pub-body">
+            Analyzed spatiotemporal relationships between childhood asthma and environmental factors
+            (air pollution, climate, vegetation NDVI) across industrial and non-industrial cities in Taiwan.
+            Applied Generalized Additive Mixed Models (GAMMs) to evaluate environmental impacts,
+            with results visualized using ggplot2.
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── PROJECTS ── -->
+    <section id="projects" class="section">
+      <div class="s-head">
+        <span class="s-num">// 03</span>
+        <h2 class="s-title">Projects</h2>
+      </div>
+
+      <div class="proj-grid">
+
+        <div class="proj-card span2">
+          <p class="proj-type">QGIS Plugin · 2023 – 2026</p>
+          <h3 class="proj-title">Dynamic Flow</h3>
+          <p class="proj-desc">
+            Integrated 3D Gradient Approach, GWR, GTWR, and GWQR spatial statistical algorithms
+            directly into the QGIS graphical interface, making advanced geospatial analysis accessible
+            to researchers without custom scripting. The plugin has accumulated ~2,000 downloads on
+            the official QGIS plugin repository.
+          </p>
+          <div class="proj-tags">
+            <span class="ptag">QGIS</span>
+            <span class="ptag">Spatial Statistics</span>
+            <span class="ptag">Python</span>
+            <span class="ptag">~2k Downloads</span>
+          </div>
+        </div>
+
+        <div class="proj-card span2">
+          <p class="proj-type">Hackathon · Jun 2024</p>
+          <h3 class="proj-title">Educational Resources Recommendation Website</h3>
+          <div class="award-badge">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            TSDC Hackathon — 1st Place
+          </div>
+          <p class="proj-desc">
+            Built a website that generates personalized learning roadmaps from user-supplied keywords
+            using the OpenAI API, then recommends relevant open online resources. Developed with React;
+            designed the database system and recommendation algorithm factoring course relevance and
+            user reviews.
+          </p>
+          <div class="proj-tags">
+            <span class="ptag">React</span>
+            <span class="ptag">OpenAI API</span>
+            <span class="ptag">Database Design</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── CONTACT ── -->
+    <section id="contact" class="section">
+      <div class="s-head">
+        <span class="s-num">// 04</span>
+        <h2 class="s-title">Contact</h2>
+      </div>
+
+      <!-- Alaska landscape — full photo, no crop -->
+      <div class="alaska-scene">
+        <img src="./background.jpeg" alt="Alaska — Blue Hour, December 2025">
+        <span class="alaska-caption">Alaska · Blue Hour · Dec 2025</span>
+      </div>
+
+      <div class="contact-wrap">
+        <div>
+          <p class="contact-intro">
+            I'm always open to discussing research collaborations, PhD opportunities, or
+            interesting projects in computer vision and machine learning. Feel free to reach out —
+            I try to respond within a day or two.
+          </p>
+
+          <div class="c-list">
+
+            <a href="mailto:chenyu20020816@gmail.com" class="c-item">
+              <div class="c-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                  <rect x="2" y="4" width="20" height="16" rx="2"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+              </div>
+              <div class="c-text">
+                <span class="c-label">Email</span>
+                <span class="c-val">chenyu20020816@gmail.com</span>
+              </div>
+            </a>
+
+            <a href="https://github.com/chenyu020816" class="c-item" target="_blank" rel="noopener">
+              <div class="c-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                </svg>
+              </div>
+              <div class="c-text">
+                <span class="c-label">GitHub</span>
+                <span class="c-val">chenyu020816</span>
+              </div>
+            </a>
+
+            <a href="./CV.pdf" download class="c-item">
+              <div class="c-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                  <polyline points="14,2 14,8 20,8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                  <polyline points="10,9 9,9 8,9"/>
+                </svg>
+              </div>
+              <div class="c-text">
+                <span class="c-label">Download</span>
+                <span class="c-val">Curriculum Vitae (PDF)</span>
+              </div>
+            </a>
+
+            <a href="./Resume.pdf" download class="c-item">
+              <div class="c-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                  <polyline points="14,2 14,8 20,8"/>
+                  <line x1="12" y1="18" x2="12" y2="12"/>
+                  <polyline points="9,15 12,18 15,15"/>
+                </svg>
+              </div>
+              <div class="c-text">
+                <span class="c-label">Download</span>
+                <span class="c-val">Résumé (PDF)</span>
+              </div>
+            </a>
+
+          </div>
+        </div>
+
+        <div class="big-hello" aria-hidden="true">Say<br>Hello.</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  const navBtns = document.querySelectorAll('.nav-link');
+  const sections = document.querySelectorAll('.section');
+  const sidebar  = document.getElementById('sidebar');
+  const ham      = document.getElementById('ham');
+
+  function show(id) {
+    sections.forEach(s => s.classList.toggle('active', s.id === id));
+    navBtns.forEach(b => b.classList.toggle('active', b.dataset.sec === id));
+    if (window.innerWidth <= 980) {
+      sidebar.classList.remove('open');
+      ham.classList.remove('open');
+    }
+  }
+
+  navBtns.forEach(btn => btn.addEventListener('click', () => show(btn.dataset.sec)));
+
+  ham.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    ham.classList.toggle('open');
+  });
+
+  document.addEventListener('click', e => {
+    if (window.innerWidth <= 980 && !sidebar.contains(e.target) && !ham.contains(e.target)) {
+      sidebar.classList.remove('open');
+      ham.classList.remove('open');
+    }
+  });
+</script>
+
+</body>
+</html>
